@@ -271,6 +271,14 @@ export class AppComponent implements OnInit{
         console.log(Math.floor(widgetHeight/s.cellHeight))
         s.resizeElement(Math.floor(widgetHeight/s.cellHeight), grid)
       })
+      grid.getElementsByClassName('ui-resizable-sw')[0].addEventListener('mouseup', function(this){
+        let widgetHeight:any = `${grid.clientHeight}`;
+        widgetHeight=widgetHeight.replace('px','');
+        widgetHeight= widgetHeight * 1;
+        // s.newGrid(Math.floor(widgetHeight/s.cellHeight), grid)
+        console.log(Math.floor(widgetHeight/s.cellHeight))
+        s.resizeElement(Math.floor(widgetHeight/s.cellHeight), grid)
+      })
     });
   }
   resizeElement(widgetHeight:any, item?:any){
