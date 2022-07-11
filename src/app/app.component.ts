@@ -1,3 +1,4 @@
+import { unsupported } from '@angular/compiler/src/render3/view/util';
 import { Component, OnInit } from '@angular/core';
 import { GridItemHTMLElement, GridStack, GridStackNode, GridStackWidget } from 'gridstack';
 import 'gridstack/dist/h5/gridstack-dd-native';
@@ -64,7 +65,17 @@ export class AppComponent implements OnInit{
     //       s.newGrid(Math.floor(widgetHeight/s.cellHeight), grid)
     //   })
     // });
-    this.addWidgetResizeHandle()
+    this.addWidgetResizeHandle();
+    this.grid.on('resize', (event: Event, el: GridItemHTMLElement)=>{
+      console.log("RESIZE GRID")
+      console.log(event)
+      console.log(el);
+      let widgetHeight:any = `${el.clientHeight}`;
+      widgetHeight=widgetHeight.replace('px','');
+      widgetHeight= widgetHeight * 1;
+      s.resizeElement(Math.floor(widgetHeight/s.cellHeight), el)
+    })
+
     this.grid.on('dragstop', function(event: Event, el: GridItemHTMLElement) {
       console.log("DRAGSTOP");
       console.log(el.gridstackNode.h)
@@ -212,6 +223,9 @@ export class AppComponent implements OnInit{
           })
           console.log(swappableElement)
           console.log(oneElement)
+          if(swappableElement.length == 1 && draggedElement.gridstackNode.h === swappableElement[0].h && draggedElement.gridstackNode.w === swappableElement[0].w){
+            oneElement = swappableElement[0].element;
+          }
           if(oneElement){
             let dragX = draggedElement.gridstackNode.x;
             let dragY = draggedElement.gridstackNode.y;
@@ -330,6 +344,20 @@ export class AppComponent implements OnInit{
               //   })
               // }
               // swappableElement.push({element:draggedElement,x:elementY})
+              // for(let i=0;i<unSwappableElement.length;i++){
+              //   s.grid.update(unSwappableElement[i].element,{
+              //     x: unSwappableElement[i].x,
+              //     y: unSwappableElement[i].y,
+              //     h: unSwappableElement[i].h,
+              //     w: unSwappableElement[i].w
+              //   });
+              // }
+              // for(let i=0;i<unSwappableElement.length;i++){
+              //   s.grid.update(unSwappableElement[i].element,{
+              //     x: unSwappableElement[i].x,
+              //     y: unSwappableElement[i].y
+              //   })
+              // }
               for(let i=0;i<swappableElement.length;i++){
                 s.grid.update(swappableElement[i].element,{
                   x: swappableElement[i].x,
@@ -345,18 +373,20 @@ export class AppComponent implements OnInit{
                   })
               }
               
+              for(let i=0;i<unSwappableElement.length-1;i++){
+                console.log("HHEFLS")
+                s.grid.update(unSwappableElement[i].element,{
+                  x: unSwappableElement[i].x,
+                  y: unSwappableElement[i].y
+                })
+              }
               // for(let i=0;i<swappableElement.length;i++){
               //   s.grid.update(swappableElement[i].element,{
               //     y: swappableElement[i].y
               //   })
               // }
               
-              for(let i=0;i<unSwappableElement.length;i++){
-                s.grid.update(unSwappableElement[i].element,{
-                  x: unSwappableElement[i].x,
-                  y: unSwappableElement[i].y
-                })
-              }
+              
 
               const newWidget = {
                 content: ``,
@@ -369,10 +399,11 @@ export class AppComponent implements OnInit{
                 autoPosition: false,
               };
               if(s.grid.willItFit(newWidget)){
-                  swappableElement.push({element:draggedElement,x:elementY})
-                  // s.grid.update(draggedElement, {
-                  //   x: elementY,
-                  // })
+                  // swappableElement.push({element:draggedElement,x:elementY})
+                  
+                  s.grid.update(draggedElement, {
+                    x: elementY,
+                  })
                   for(let i=0;i<swappableElement.length;i++){
                     s.grid.update(swappableElement[i].element,{
                       x: swappableElement[i].x,
@@ -381,25 +412,47 @@ export class AppComponent implements OnInit{
                       w: swappableElement[i].w
                     })
                   }
-                  for(let i=0;i<swappableElement.length;i++){
-                      s.grid.update(swappableElement[i].element,{
-                        y: swappableElement[i].y,
-                        x: swappableElement[i].x,
-                      })
-                  }
+                  
                   for(let i=0;i<unSwappableElement.length;i++){
-                    s.grid.update(unSwappableElement[i].element,{
+                    swappableElement.push({element:unSwappableElement[i].element,
                       x: unSwappableElement[i].x,
-                      y: unSwappableElement[i].y
+                      y: unSwappableElement[i].y,
+                      h: unSwappableElement[i].h,
+                      w: unSwappableElement[i].w
+                    })
+                  }
+                  for(let i=0;i<swappableElement.length - 1;i++){
+                    for(let j=i+1;j<swappableElement.length; j++){
+                      let temp;
+                      if(swappableElement[i].x > swappableElement[j].x || ((swappableElement[i].x === swappableElement[j].x)) && swappableElement[i].y > swappableElement[j].y || ((swappableElement[i].y === swappableElement[j].y)))
+                      {
+                        temp = swappableElement[i];
+                        swappableElement[i] =swappableElement[j];
+                        swappableElement[j]=temp;
+                      }
+                    }
+                  }
+                  console.log(swappableElement)
+                  for(let i=0;i<swappableElement.length;i++){
+                    s.grid.update(swappableElement[i].element,{
+                      y: swappableElement[i].y,
+                      // x: swappableElement[i].x,
                     })
                   }
               }else{
+                console.log(originalElements)
                 for(let i=0;i<originalElements.length;i++){
                   s.grid.update(originalElements[i].element,{
                     x: originalElements[i].x,
                     y: originalElements[i].y,
                     h: originalElements[i].h,
                     w: originalElements[i].w
+                  })
+                }
+                for(let i=0;i<originalElements.length;i++){
+                  s.grid.update(originalElements[i].element,{
+                    x: originalElements[i].x,
+                    y: originalElements[i].y,
                   })
                 }
               }
@@ -422,17 +475,18 @@ export class AppComponent implements OnInit{
             //   swappableElement[i].element.dispatchEvent(event);
             //   s.resizeElement(swappableElement[i].element.gridstackNode.h,swappableElement[i].element)
             // }
-            s.gridItems = s.grid.getGridItems();
-            s.grid.removeAll();
-            for (const widget of s.gridItems) {
-              s.grid.addWidget(widget)
-            }
-            s.addWidgetResizeHandle();
+            
+            // s.gridItems = s.grid.getGridItems();
+            // s.grid.removeAll();
+            // for (const widget of s.gridItems) {
+            //   s.grid.addWidget(widget)
+            // }
+            // s.addWidgetResizeHandle();
             
             }
           
             // s.resizeElement(s.gridFirstRowHeight)
-          }else if(swappable && oneElement != undefined){
+          }else if(oneElement != undefined){
             console.log("ELSE")
             if(swappableElement.length>0){
               for(let i=0;i<swappableElement.length;i++){
@@ -441,11 +495,37 @@ export class AppComponent implements OnInit{
                   y: swappableElement[i].y
                 })
               }
-              if(isSwap){
-                s.grid.update(draggedElement, {
-                  x: elementY,
+              for(let i=0;i<unSwappableElement.length;i++){
+                swappableElement.push({element:unSwappableElement[i].element,
+                  x: unSwappableElement[i].x,
+                  y: unSwappableElement[i].y,
+                  h: unSwappableElement[i].h,
+                  w: unSwappableElement[i].w
                 })
               }
+              for(let i=0;i<swappableElement.length - 1;i++){
+                for(let j=i+1;j<swappableElement.length; j++){
+                  let temp;
+                  if(swappableElement[i].x > swappableElement[j].x || ((swappableElement[i].x === swappableElement[j].x)) && swappableElement[i].y > swappableElement[j].y || ((swappableElement[i].y === swappableElement[j].y)))
+                  {
+                    temp = swappableElement[i];
+                    swappableElement[i] =swappableElement[j];
+                    swappableElement[j]=temp;
+                  }
+                }
+              }
+              console.log(swappableElement)
+              for(let i=0;i<swappableElement.length;i++){
+                s.grid.update(swappableElement[i].element,{
+                  y: swappableElement[i].y,
+                  // x: swappableElement[i].x,
+                })
+              }
+              // if(isSwap){
+              //   s.grid.update(draggedElement, {
+              //     x: elementY,
+              //   })
+              // }
             }
           
         //     // s.resizeElement(s.gridFirstRowHeight)
@@ -536,7 +616,7 @@ export class AppComponent implements OnInit{
     });
   }
   resizeElement(widgetHeight:any, item?:any){
-    // console.log(item.gridstackNode.y)
+    console.log(widgetHeight)
     if(item){
       if(item.gridstackNode.y !== 0)
       { 
@@ -565,6 +645,7 @@ export class AppComponent implements OnInit{
     }
     let resizeElement:any = [];
     let notResizeElement:any = [];
+    console.log(item)
     this.findAffectedElements(resizeElement,item);
     for(let i = 0; i < resizeElement.length; i++){
       this.findAffectedElements(resizeElement,resizeElement[i])
@@ -672,7 +753,7 @@ export class AppComponent implements OnInit{
      
     // }
   }
-  console.log('All',allElements)
+  // console.log('All',allElements)
   for(let i=0;i<allElements.length;i++){
     this.grid.update(allElements[i].element, {
             y:allElements[i].y,
@@ -700,7 +781,7 @@ export class AppComponent implements OnInit{
       if(this.gridItems[i] !== item){
         if(item.gridstackNode.x<=this.gridItems[i].gridstackNode.x && this.gridItems[i].gridstackNode.x<(item.gridstackNode.x+item.gridstackNode.w)){
           if(!resizeElement.includes(this.gridItems[i])){
-            console.log(this.gridItems[i].gridstackNode)
+            // console.log(this.gridItems[i].gridstackNode)
             resizeElement.push(this.gridItems[i])
           }
         } else if(item.gridstackNode.x<(this.gridItems[i].gridstackNode.x+this.gridItems[i].gridstackNode.w) && (this.gridItems[i].gridstackNode.x+this.gridItems[i].gridstackNode.w)<(item.gridstackNode.x+item.gridstackNode.w)){
