@@ -67,25 +67,28 @@ export class AppComponent implements OnInit{
     this.addWidgetResizeHandle()
     this.grid.on('dragstop', function(event: Event, el: GridItemHTMLElement) {
       console.log("DRAGSTOP");
-      s.resizeElement(s.gridFirstRowHeight)
-      s.gridItems = s.grid.getGridItems();
-      for(let i=0;i<s.gridItems.length - 1;i++){
-        for(let j=i+1;j<s.gridItems.length; j++){
-          let temp;
-          if(s.gridItems[i].gridstackNode.x > s.gridItems[j].gridstackNode.x || ((s.gridItems[i].gridstackNode.x === s.gridItems[j].gridstackNode.x) && (s.gridItems[i].gridstackNode.y > s.gridItems[j].gridstackNode.y)))
-          {
-            temp = s.gridItems[i];
-            s.gridItems[i] =s.gridItems[j];
-            s.gridItems[j]=temp;
-          }
-        }
-      }
-      s.grid.removeAll();
-      for (const widget of s.gridItems) {
-        s.grid.addWidget(widget)
-      }
-      s.addWidgetResizeHandle();
-        s.resizeElement(s.gridFirstRowHeight)
+      console.log(el.gridstackNode.h)
+      s.resizeElement(el.gridstackNode.h,el)
+      // s.gridItems = s.grid.getGridItems();
+      // for(let i=0;i<s.gridItems.length - 1;i++){
+      //   for(let j=i+1;j<s.gridItems.length; j++){
+      //     let temp;
+      //     if(s.gridItems[i].gridstackNode.x > s.gridItems[j].gridstackNode.x || ((s.gridItems[i].gridstackNode.x === s.gridItems[j].gridstackNode.x) && (s.gridItems[i].gridstackNode.y > s.gridItems[j].gridstackNode.y)))
+      //     {
+      //       temp = s.gridItems[i];
+      //       s.gridItems[i] =s.gridItems[j];
+      //       s.gridItems[j]=temp;
+      //     }
+      //   }
+      // }
+      // s.grid.removeAll();
+      // for (const widget of s.gridItems) {
+      //   s.grid.addWidget(widget)
+      // }
+      // s.addWidgetResizeHandle();
+      // s.resizeElement(s.gridFirstRowHeight)
+      // s.resizeElement(el.gridstackNode.h,el)
+
     });
     console.log(this.gridItems)
 
@@ -94,6 +97,7 @@ export class AppComponent implements OnInit{
       let elementY;
       let elementX;
       let elementH;
+      let elementW;
       grid.addEventListener('drag', function(this){
         // console.log("DragDrop")
         let columnSize = document.getElementsByClassName('grid-stack')[0].clientWidth/6;
@@ -115,6 +119,7 @@ export class AppComponent implements OnInit{
           elementX = s.gridFirstRowHeight;
         }
         elementH = grid.gridstackNode.h;
+        elementW = grid.gridstackNode.w;
         console.log(elementX);
 
         // console.log(s.cellHeight)
@@ -133,23 +138,73 @@ export class AppComponent implements OnInit{
         let oneElement;
         if(elementY >= 0){
           let swappableElement = [];
+          let unSwappableElement = [];
           let isSwap=false;
+          console.log('X=',elementY)
+          console.log('W=',elementY+elementW)
+          console.log('Y=',elementX)
+          console.log('H=',elementH+elementX)
+          console.log(draggedElement.gridstackNode.x < elementY)
+          // if(draggedElement.gridstackNode.x < elementY){}
           s.gridItems.forEach((grid)=>{
             if(grid !== draggedElement){
-              if(grid.gridstackNode.y >= draggedElement.gridstackNode.y && grid.gridstackNode.h <= draggedElement.gridstackNode.h && grid.gridstackNode.x === elementY && draggedElement.gridstackNode.h === s.maxGridRow){
-                swappableElement.push({element:grid, y:grid.gridstackNode.y, x:draggedElement.gridstackNode.x});
+              // if(grid.gridstackNode.y >= draggedElement.gridstackNode.y && grid.gridstackNode.h <= draggedElement.gridstackNode.h && grid.gridstackNode.x === elementY && draggedElement.gridstackNode.h === s.maxGridRow){
+              //   swappableElement.push({element:grid, y:grid.gridstackNode.y, x:draggedElement.gridstackNode.x});
                 
-                isSwap = true;
-              }else if(grid.gridstackNode.x === elementY && grid.gridstackNode.y === elementX && grid.gridstackNode.h === elementH){
-                console.log(elementY)
-                console.log(grid.gridstackNode.x)
-                console.log(elementX)
-                console.log(grid.gridstackNode.y)
+              //   isSwap = true;
+              // }else 
+              if(grid.gridstackNode.x === elementY && grid.gridstackNode.y === elementX && grid.gridstackNode.h === elementH){
+                // console.log(elementY)
+                // console.log(grid.gridstackNode.x)
+                // console.log(elementX)
+                // console.log(grid.gridstackNode.y)
 
                 oneElement = grid;
-                console.log("DDF")
-              } else{
-                swappableElement.push({element:grid, y:grid.gridstackNode.y, x:grid.gridstackNode.x});
+                // console.log("DDF")
+              } 
+              else if(grid.gridstackNode.x>= elementY 
+                && (grid.gridstackNode.x+grid.gridstackNode.w)<= (elementY+elementW) 
+                && grid.gridstackNode.y >= elementX 
+                && (grid.gridstackNode.y+grid.gridstackNode.h)<= (elementX+elementH)){
+                  console.log("GRIDX",grid.gridstackNode.x)
+                  console.log("DRAGX",draggedElement.gridstackNode.x)
+                  let swapValue;
+                  if(grid.gridstackNode.x < draggedElement.gridstackNode.x){
+                    // if((draggedElement.gridstackNode.x - grid.gridstackNode.x) > (draggedElement.gridstackNode.w)){
+                    if((grid.gridstackNode.x % 2) != 0){
+                      swapValue = (draggedElement.gridstackNode.x+(draggedElement.gridstackNode.x - grid.gridstackNode.x));
+                      console.log("1SWAP=",(draggedElement.gridstackNode.x+(draggedElement.gridstackNode.x - grid.gridstackNode.x)))
+                    }else{
+                      swapValue = (draggedElement.gridstackNode.x);
+                      console.log("2SWAP=",(draggedElement.gridstackNode.x))
+                    }
+                  }else{
+                    if((grid.gridstackNode.x % 2) != 0){
+                      if(draggedElement.gridstackNode.x === 0){
+                        swapValue = (grid.gridstackNode.x-elementY);  
+                      }else{
+                        swapValue = (grid.gridstackNode.x-draggedElement.gridstackNode.x);
+                      }
+                      console.log("R1SWAP=",((grid.gridstackNode.x-draggedElement.gridstackNode.x)))
+                    }else{
+                      swapValue = (draggedElement.gridstackNode.x);
+                      console.log("R2SWAP=",(draggedElement.gridstackNode.x))
+                    } 
+                  }
+                  // if(grid.gridstackNode.x > draggedElement.gridstackNode.x){
+                  //   console.log("Swap Position=",(elementY-elementW))
+                  // }else{
+                  //   console.log("Swap Position=",draggedElement.gridstackNode.x+elementY)
+                  // } 
+                  // if(grid.gridstackNode.x === elementY){
+                    swappableElement.push({element:grid, y:grid.gridstackNode.y, x:swapValue, h:grid.gridstackNode.h,w:grid.gridstackNode.w});
+                  // }else{
+                  //   swappableElement.push({element:grid, y:grid.gridstackNode.y, x:draggedElement.gridstackNode.x+1});
+                  // }
+                  isSwap = true;
+              }
+              else{
+                unSwappableElement.push({element:grid, y:grid.gridstackNode.y, x:grid.gridstackNode.x,h:grid.gridstackNode.h,w:grid.gridstackNode.w});
               }
              
             }
@@ -171,12 +226,12 @@ export class AppComponent implements OnInit{
             // console.log(s.grid.getGridItems())
             console.log(dragX)
             if(dragX < oneElementX){
-            swappableElement.push({element:oneElement,x:dragX,y:dragY})
-            swappableElement.push({element:draggedElement,x:oneElementX,y:oneElementY})
+            swappableElement.push({element:oneElement,x:dragX,y:dragY,h:draggedElement.gridstackNode.h,w:draggedElement.gridstackNode.w})
+            swappableElement.push({element:draggedElement,x:oneElementX,y:oneElementY,h:oneElement.gridstackNode.h,w:oneElement.gridstackNode.w})
             }else{
-            swappableElement.push({element:draggedElement,x:oneElementX,y:oneElementY})
+              swappableElement.push({element:draggedElement,x:oneElementX,y:oneElementY,h:oneElement.gridstackNode.h,w:oneElement.gridstackNode.w})
 
-              swappableElement.push({element:oneElement,x:dragX,y:dragY})
+              swappableElement.push({element:oneElement,x:dragX,y:dragY,h:draggedElement.gridstackNode.h,w:draggedElement.gridstackNode.w})
             }// s.grid.update(oneElement, {
             //   x:dragX,
             //   y:dragY
@@ -186,26 +241,225 @@ export class AppComponent implements OnInit{
             //   y:oneElementY
             // })
           }
-          if(swappableElement.length>0){
-            for(let i=0;i<swappableElement.length;i++){
-              s.grid.update(swappableElement[i].element,{
-                x: swappableElement[i].x,
-                y: swappableElement[i].y
-              })
+          console.log(swappableElement);
+          console.log(unSwappableElement)
+          //Check height of swappable and draggable element;
+          let totalHeight = 0;
+          let totalWidth = 0;
+          //Sort
+          console.log(swappableElement[0])
+          for(let i=0;i<swappableElement.length - 1;i++){
+            for(let j=i+1;j<swappableElement.length; j++){
+              let temp;
+              if(swappableElement[i].x > swappableElement[j].x || ((swappableElement[i].x === swappableElement[j].x) ))
+              {
+                temp = swappableElement[i];
+                swappableElement[i] =swappableElement[j];
+                swappableElement[j]=temp;
+              }
             }
-            if(isSwap){
-              s.grid.update(draggedElement, {
-                x: elementY,
-              })
           }
-          
-            s.resizeElement(s.gridFirstRowHeight)
+          let firstRowElement = false;
+          let secondRowElement = false;
+          for(let i=0;i<swappableElement.length;i++){
+            if(!firstRowElement && swappableElement[i].y === 0){
+              totalHeight = totalHeight + swappableElement[i].h;
+              firstRowElement = true;
+            }
+            if(!secondRowElement && swappableElement[i].y !== 0){
+              totalHeight = totalHeight + swappableElement[i].h;
+              secondRowElement = true;
+            }
             
+            // totalHeight = totalHeight + swappableElement[i].element.gridstackNode.h;
+            // totalWidth = totalWidth + swappableElement[i].element.gridstackNode.w
+          }
+
+          
+          let swappable = false;
+          if(draggedElement.gridstackNode.h === totalHeight){
+            swappable = true;
+          }
+          if(totalHeight <= draggedElement.gridstackNode.h && !secondRowElement){
+            swappable = true;
+          }
+          if(swappableElement.length === 1 && totalHeight < draggedElement.gridstackNode.h && swappableElement[0].element.gridstackNode.y === draggedElement.gridstackNode.y){
+            console.log("HHE")
+            swappable = true;
+          }
+          console.log("SWAPPLE=",swappable)
+          console.log("TOTAL HEIGHT=",totalHeight)
+          console.log("DRAG HEIGHT=",draggedElement.gridstackNode.h)
+          if(swappable && oneElement === undefined){
+            console.log("GGG")
+            if(swappableElement.length>0){
+              // s.grid.batchUpdate()
+              let originalElements = [];
+              s.gridItems = s.grid.getGridItems();
+              for(let i=0;i< s.gridItems.length;i++){
+                originalElements.push({element:s.gridItems[i],
+                  x: s.gridItems[i].gridstackNode.x,
+                  y: s.gridItems[i].gridstackNode.y,
+                  h: s.gridItems[i].gridstackNode.h,
+                  w: s.gridItems[i].gridstackNode.w
+                })
+              }
+              for(let i=0;i<swappableElement.length;i++){
+                // console.log({...swappableElement[i].element.gridstackNode})
+                console.log({...swappableElement[i].element.gridstackNode,
+                  x: swappableElement[i].x,
+                  y: swappableElement[i].y,
+                  h: swappableElement[i].h,
+                  w: swappableElement[i].w
+                })
+              }
+
+              // s.grid.engine.nodes = [];
+              // // console.log(widgetHeight)
+              // for (let i=0;i<swappableElement.length;i++) {
+              //   s.grid.engine.nodes.push({...swappableElement[i].element.gridstackNode,
+              //     x: swappableElement[i].x,
+              //     y: swappableElement[i].y,
+              //     h: swappableElement[i].h,
+              //     w: swappableElement[i].w
+              //   });
+              // }
+              // if(isSwap){
+              //   s.grid.update(draggedElement, {
+              //     x: elementY,
+              //   })
+              // }
+              // swappableElement.push({element:draggedElement,x:elementY})
+              for(let i=0;i<swappableElement.length;i++){
+                s.grid.update(swappableElement[i].element,{
+                  x: swappableElement[i].x,
+                  y: swappableElement[i].y,
+                  h: swappableElement[i].h,
+                  w: swappableElement[i].w
+                })
+              }
+              for(let i=0;i<swappableElement.length;i++){
+                  s.grid.update(swappableElement[i].element,{
+                    y: swappableElement[i].y,
+                    x: swappableElement[i].x,
+                  })
+              }
+              
+              // for(let i=0;i<swappableElement.length;i++){
+              //   s.grid.update(swappableElement[i].element,{
+              //     y: swappableElement[i].y
+              //   })
+              // }
+              
+              for(let i=0;i<unSwappableElement.length;i++){
+                s.grid.update(unSwappableElement[i].element,{
+                  x: unSwappableElement[i].x,
+                  y: unSwappableElement[i].y
+                })
+              }
+
+              const newWidget = {
+                content: ``,
+                minW: elementW,
+                minH: elementH,
+                h: elementH,
+                w: elementW,
+                x: elementY,
+                y:draggedElement.gridstackNode.y,
+                autoPosition: false,
+              };
+              if(s.grid.willItFit(newWidget)){
+                  swappableElement.push({element:draggedElement,x:elementY})
+                  // s.grid.update(draggedElement, {
+                  //   x: elementY,
+                  // })
+                  for(let i=0;i<swappableElement.length;i++){
+                    s.grid.update(swappableElement[i].element,{
+                      x: swappableElement[i].x,
+                      y: swappableElement[i].y,
+                      h: swappableElement[i].h,
+                      w: swappableElement[i].w
+                    })
+                  }
+                  for(let i=0;i<swappableElement.length;i++){
+                      s.grid.update(swappableElement[i].element,{
+                        y: swappableElement[i].y,
+                        x: swappableElement[i].x,
+                      })
+                  }
+                  for(let i=0;i<unSwappableElement.length;i++){
+                    s.grid.update(unSwappableElement[i].element,{
+                      x: unSwappableElement[i].x,
+                      y: unSwappableElement[i].y
+                    })
+                  }
+              }else{
+                for(let i=0;i<originalElements.length;i++){
+                  s.grid.update(originalElements[i].element,{
+                    x: originalElements[i].x,
+                    y: originalElements[i].y,
+                    h: originalElements[i].h,
+                    w: originalElements[i].w
+                  })
+                }
+              }
+
+              // for(let i=0;i<unSwappableElement.length;i++){
+              //   s.grid.update(unSwappableElement[i].element,{
+              //     y: unSwappableElement[i].y
+              //   })
+              // }
+              // s.gridItems = s.grid.getGridItems();
+              // for(let i=0;i< s)
+              // s.grid.engine.nodes = [];
+              // s.grid.commit()
+            // console.log(widgetHeight)
+            // for (const widget of s.gridItems) {
+            //   s.grid.engine.nodes.push(widget.gridstackNode);
+            // }
+            // for(let i=0; i<swappableElement.length;i++){
+            //   let event = new Event('drag');
+            //   swappableElement[i].element.dispatchEvent(event);
+            //   s.resizeElement(swappableElement[i].element.gridstackNode.h,swappableElement[i].element)
+            // }
+            s.gridItems = s.grid.getGridItems();
+            s.grid.removeAll();
+            for (const widget of s.gridItems) {
+              s.grid.addWidget(widget)
+            }
+            s.addWidgetResizeHandle();
+            
+            }
+          
+            // s.resizeElement(s.gridFirstRowHeight)
+          }else if(swappable && oneElement != undefined){
+            console.log("ELSE")
+            if(swappableElement.length>0){
+              for(let i=0;i<swappableElement.length;i++){
+                s.grid.update(swappableElement[i].element,{
+                  x: swappableElement[i].x,
+                  y: swappableElement[i].y
+                })
+              }
+              if(isSwap){
+                s.grid.update(draggedElement, {
+                  x: elementY,
+                })
+              }
+            }
+          
+        //     // s.resizeElement(s.gridFirstRowHeight)
           }
         }
       })
+      // s.gridItems = s.grid.getGridItems();
+      // s.grid.removeAll();
+      // for (const widget of s.gridItems) {
+      //   s.grid.addWidget(widget)
+      // }
       draggedElement = undefined;
       elementY = undefined
+  
     });
 
     // this.grid.on('dropped', function(event: Event, previousWidget: GridStackNode, newWidget: GridStackNode) {
@@ -287,69 +541,180 @@ export class AppComponent implements OnInit{
       if(item.gridstackNode.y !== 0)
       { 
         // console.log(item.gridstackNode.y)
-        console.log(widgetHeight)
+        // console.log(widgetHeight)
         widgetHeight = this.maxGridRow - widgetHeight;
-        console.log(widgetHeight)
+        // console.log(widgetHeight)
         // this.gridFirstRowHeight = widgetHeight;
       }
-      }
+    }
     if(widgetHeight < this.minElementHeight){
-      widgetHeight = this.gridFirstRowHeight;
+      widgetHeight = this.minElementHeight;
     }
     if(widgetHeight > this.maxElementHeight){
-      widgetHeight = this.gridFirstRowHeight;
+      widgetHeight = this.maxElementHeight;
     }
-    this.gridFirstRowHeight = widgetHeight; 
+    // this.gridFirstRowHeight = widgetHeight; 
     
     console.log("RESIZEELEMENT")
-    if(item){
-      // console.log(item)
-      console.log(item.gridstackNode.h)
-      console.log(this.gridFirstRowHeight)
-    // if(item.gridstackNode.h > this.gridFirstRowHeight){
-    //   this.grid.update(item,{
-    //     h:this.gridFirstRowHeight
-    //   })
-    //   return
-    // }
-    }
+    
     this.gridItems = this.grid.getGridItems();
     this.grid.engine.nodes = [];
     // console.log(widgetHeight)
     for (const widget of this.gridItems) {
       this.grid.engine.nodes.push(widget.gridstackNode);
     }
-    for (let i = 0; i < this.gridItems.length; i++) {
-      if(this.gridItems[i].gridstackNode.y === 0 && this.gridItems[i].gridstackNode.h != this.maxGridRow){
-        this.grid.update(this.gridItems[i], {
-          x:this.gridItems[i].gridstackNode.x,
-          y:0,
-          h: widgetHeight
-        })
-      } else if (this.gridItems[i].gridstackNode.y != 0 && this.gridItems[i].gridstackNode.h != this.maxGridRow){
-        this.grid.update(this.gridItems[i], {
-          x:this.gridItems[i].gridstackNode.x,
-          y:widgetHeight,
-          h: this.maxGridRow - widgetHeight
-        })
-      }
-      
-     
+    let resizeElement:any = [];
+    let notResizeElement:any = [];
+    this.findAffectedElements(resizeElement,item);
+    for(let i = 0; i < resizeElement.length; i++){
+      this.findAffectedElements(resizeElement,resizeElement[i])
     }
 
+
+    // console.log(item.gridstackNode)
+    // console.log("X=",item.gridstackNode.x)
+    // console.log("W=",(item.gridstackNode.x+item.gridstackNode.w))
+    // for(let i = 0; i < this.gridItems.length; i++){
+    //   if(this.gridItems[i] !== item){
+    //     if(item.gridstackNode.x<=this.gridItems[i].gridstackNode.x && this.gridItems[i].gridstackNode.x<(item.gridstackNode.x+item.gridstackNode.w)){
+    //       resizeElement.push(this.gridItems[i])
+    //     } else if(item.gridstackNode.x<(this.gridItems[i].gridstackNode.x+this.gridItems[i].gridstackNode.w) && (this.gridItems[i].gridstackNode.x+this.gridItems[i].gridstackNode.w)<(item.gridstackNode.x+item.gridstackNode.w)){
+    //       resizeElement.push(this.gridItems[i]);
+    //     }
+    //   }
+    // }
+    // console.log(resizeElement)
+    
+
     for (let i = 0; i < this.gridItems.length; i++) {
-      if(this.gridItems[i].gridstackNode.y === 0 && this.gridItems[i].gridstackNode.h != this.maxGridRow){
-        this.grid.update(this.gridItems[i], {
-          y:0,
-        })
-      } else if (this.gridItems[i].gridstackNode.y != 0 && this.gridItems[i].gridstackNode.h != this.maxGridRow){
-        this.grid.update(this.gridItems[i], {
-          y:widgetHeight,
-        })
+      if(!resizeElement.includes(this.gridItems[i])){
+        // console.log(this.gridItems[i].gridstackNode.y)
+        notResizeElement.push({element:this.gridItems[i], x:this.gridItems[i].gridstackNode.x,y:this.gridItems[i].gridstackNode.y,h:this.gridItems[i].gridstackNode.h,w:this.gridItems[i].gridstackNode.w})
       }
+    }
+    console.log(notResizeElement)
+    for (let i = 0; i < resizeElement.length; i++) {
+      resizeElement[i] = {element:resizeElement[i], x:resizeElement[i].gridstackNode.x, y:resizeElement[i].gridstackNode.y,h:resizeElement[i].gridstackNode.h,w:resizeElement[i].gridstackNode.w}
+    }
+    // console.log(resizeElement);
+    let allElements = [];
+    if(resizeElement.length > 0){
+      // for(let i = 0; i < notResizeElement.length; i++) {
+      //   this.grid.update(notResizeElement[i].element, {
+      //     x:notResizeElement[i].x,
+      //     y:notResizeElement[i].y,
+      //     h: notResizeElement[i].h
+      //   });
+      //  allElements.push({element:notResizeElement[i].element,x:notResizeElement[i].x,y:notResizeElement[i].y,h:notResizeElement[i].h,w:notResizeElement[i].w})
+      // }
+      // for(let i = 0; i < notResizeElement.length; i++) {
+      //   this.grid.update(notResizeElement[i].element, {
+      //     y:notResizeElement[i].y,
+      //   })
+      // }
+      for (let i = 0; i < resizeElement.length; i++) {
+        if(resizeElement[i].y === 0 && resizeElement[i].h != this.maxGridRow){
+          this.grid.update(resizeElement[i].element, {
+            x:resizeElement[i].x,y:resizeElement[i].y,h:widgetHeight,w:resizeElement[i].w
+          })
+          // console.log()
+          allElements.push({element:resizeElement[i].element,x:resizeElement[i].x,y:resizeElement[i].y,h:widgetHeight,w:resizeElement[i].w})
+        } else if (resizeElement[i].y != 0 && resizeElement[i].h != this.maxGridRow){
+          this.grid.update(resizeElement[i].element, {
+            x:resizeElement[i].x,y:widgetHeight,h:this.maxGridRow - widgetHeight,w:resizeElement[i].w
+          })
+          allElements.push({element:resizeElement[i].element,x:resizeElement[i].x,y:widgetHeight,h:this.maxGridRow - widgetHeight,w:resizeElement[i].w})
+        }
+      }
+  
+      // for (let i = 0; i < resizeElement.length; i++) {
+      //   if(resizeElement[i].y === 0 && resizeElement[i].h != this.maxGridRow){
+      //     this.grid.update(resizeElement[i].element, {
+      //       y:0,
+      //     })
+      //   } else if (resizeElement[i].y != 0 && resizeElement[i].h != this.maxGridRow){
+      //     this.grid.update(resizeElement[i].element, {
+      //       y:widgetHeight,
+      //     })
+      //   }
+      // }
+      
+    }else{
+    // for (let i = 0; i < this.gridItems.length; i++) {
+    //   if(this.gridItems[i].gridstackNode.y === 0 && this.gridItems[i].gridstackNode.h != this.maxGridRow){
+    //     this.grid.update(this.gridItems[i], {
+    //       x:this.gridItems[i].gridstackNode.x,
+    //       y:0,
+    //       h: widgetHeight
+    //     })
+    //   } else if (this.gridItems[i].gridstackNode.y != 0 && this.gridItems[i].gridstackNode.h != this.maxGridRow){
+    //     this.grid.update(this.gridItems[i], {
+    //       x:this.gridItems[i].gridstackNode.x,
+    //       y:widgetHeight,
+    //       h: this.maxGridRow - widgetHeight
+    //     })
+    //   }
       
      
+    // }
+
+    // for (let i = 0; i < this.gridItems.length; i++) {
+    //   if(this.gridItems[i].gridstackNode.y === 0 && this.gridItems[i].gridstackNode.h != this.maxGridRow){
+    //     this.grid.update(this.gridItems[i], {
+    //       y:0,
+    //     })
+    //   } else if (this.gridItems[i].gridstackNode.y != 0 && this.gridItems[i].gridstackNode.h != this.maxGridRow){
+    //     this.grid.update(this.gridItems[i], {
+    //       y:widgetHeight,
+    //     })
+    //   }
+      
+     
+    // }
+  }
+  console.log('All',allElements)
+  for(let i=0;i<allElements.length;i++){
+    this.grid.update(allElements[i].element, {
+            y:allElements[i].y,
+            x:allElements[i].x,
+            h:allElements[i].h,
+            w:allElements[i].w,
+    })
+  }
+  for(let i=0;i<allElements.length;i++){
+    this.grid.update(allElements[i].element, {
+        y:allElements[i].y,
+        x:allElements[i].x
+    })
+  }
+  for(let i=0;i<notResizeElement.length;i++){
+    this.grid.update(notResizeElement[i].element, {
+      y:notResizeElement[i].y,
+    })
+  }
+  }
+
+  findAffectedElements(resizeElement:any,item:any){
+    // let resizeElement=[];
+    for(let i = 0; i < this.gridItems.length; i++){
+      if(this.gridItems[i] !== item){
+        if(item.gridstackNode.x<=this.gridItems[i].gridstackNode.x && this.gridItems[i].gridstackNode.x<(item.gridstackNode.x+item.gridstackNode.w)){
+          if(!resizeElement.includes(this.gridItems[i])){
+            console.log(this.gridItems[i].gridstackNode)
+            resizeElement.push(this.gridItems[i])
+          }
+        } else if(item.gridstackNode.x<(this.gridItems[i].gridstackNode.x+this.gridItems[i].gridstackNode.w) && (this.gridItems[i].gridstackNode.x+this.gridItems[i].gridstackNode.w)<(item.gridstackNode.x+item.gridstackNode.w)){
+          if(!resizeElement.includes(this.gridItems[i])){
+            resizeElement.push(this.gridItems[i])
+          }
+        } else if(item.gridstackNode.x >= this.gridItems[i].gridstackNode.x && (item.gridstackNode.x+item.gridstackNode.w) <= (this.gridItems[i].gridstackNode.x+this.gridItems[i].gridstackNode.w)){
+          if(!resizeElement.includes(this.gridItems[i])){
+            resizeElement.push(this.gridItems[i])
+          }
+        }
+      }
     }
+    return resizeElement;
   }
 
   newGrid(widgetHeight:any, item){
